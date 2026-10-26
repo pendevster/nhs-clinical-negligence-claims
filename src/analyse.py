@@ -52,6 +52,45 @@ def share_table() -> pd.DataFrame:
     return merged
 
 
+
+def check_parts_add_up(year: str, tolerance: float = 0.005) -> dict:
+    """
+    Check our specialty rows against the total NHS Resolution publishes.
+
+    If the two disagree, something is wrong: either a specialty has been added
+    to the spreadsheet that we are not picking up, or a row is being counted
+    twice. Catching that here means a wrong answer is never published quietly.
+
+    Tolerance is 0.5%, to allow for rounding in the published figures.
+    """
+    money = pd.read_csv(PROCESSED / "liabilities_by_specialty.csv")
+    claims = pd.read_csv(PROCESSED / "claims_by_specialty.csv")
+
+    results = {}
+    for name, frame, column, total_label in (
+        ("money owed", money, "liability_gbp", KNOWN_CLAIMS_TOTAL),
+        ("claims reported", claims, "claims", CLAIMS_TOTAL),
+    ):
+        rows = frame[frame["year"] == year]
+        parts = rows[~rows["is_total"]][column].sum()
+        published = rows[rows["specialty"] == total_label][column]
+        if published.empty:
+            raise ValueError(f"no published total for {name} in {year}")
+        published = float(published.iloc[0])
+
+        difference = abs(parts - published)
+        relative = difference / published if published else 0.0
+        results[name] = {"parts": parts, "published": published, "relative": relative}
+
+        if relative > tolerance:
+            raise ValueError(
+                f"{name} in {year}: our specialties sum to {parts:,.0f} but the "
+                f"spreadsheet publishes {published:,.0f}, a gap of {relative:.2%}. "
+                "A specialty may have been added that the cleaning step is missing."
+            )
+    return results
+
+
 if __name__ == "__main__":
     OUTPUTS.mkdir(exist_ok=True)
     table = share_table()
@@ -69,3 +108,9 @@ if __name__ == "__main__":
     print(show.to_string(index=False))
 
     table.to_csv(OUTPUTS / "money_vs_claims_latest_year.csv", index=False)
+
+    print("\nCheck: do our specialty rows add up to the published totals?")
+    for name, result in check_parts_add_up(year).items():
+        print(f"  {name:18} ours {result['parts']:>18,.0f}   "
+              f"published {result['published']:>18,.0f}   "
+              f"gap {result['relative']:.3%}")

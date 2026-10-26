@@ -73,3 +73,24 @@ def test_long_shape_has_one_row_per_specialty_per_year():
     result = to_long(table, "claims")
     assert len(result) == 4
     assert set(result.columns) == {"specialty", "year", "claims", "is_total", "suppressed"}
+
+
+def test_specialties_add_up_to_the_published_total():
+    """
+    Our specialty rows must match the total NHS Resolution publishes.
+
+    This is the check that would catch a new specialty appearing in a future
+    spreadsheet, or a row being counted twice. It needs the cleaned files, so
+    it is skipped if the pipeline has not been run yet.
+    """
+    processed = Path(__file__).resolve().parent.parent / "data" / "processed"
+    if not (processed / "liabilities_by_specialty.csv").exists():
+        pytest.skip("run src/clean_data.py first")
+
+    from analyse import check_parts_add_up, latest_year
+
+    money = pd.read_csv(processed / "liabilities_by_specialty.csv")
+    results = check_parts_add_up(latest_year(money))
+
+    for name, result in results.items():
+        assert result["relative"] < 0.005, f"{name} does not reconcile"

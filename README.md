@@ -44,7 +44,9 @@ appearing out of nowhere. They are excluded.
 £39.7bn, then £59.5bn in 2021/22, then falls back to £40.9bn. The notes explain that from 2022/23
 the sum is worked out differently, using an actuarial view of when claims will be paid rather than
 an estimated settlement date. Figures either side of that change are not measuring the same thing,
-so the change is marked rather than smoothed over.
+so the two halves are drawn as separate lines rather than joined into one.
+
+![Money owed on known claims by year, with the 2022/23 change of method marked](outputs/money_owed_over_time.png)
 
 ## What this does not show, and one thing to read carefully
 
@@ -67,19 +69,26 @@ Published at <https://resolution.nhs.uk/resources/annual-statistics-including-fa
 
 ## Running it yourself
 
-Everything runs from the three scripts in `src/`, in order. The spreadsheet is downloaded once and
-reused, so the result is the same every time.
+Two commands. The first installs the tools, the second does everything else: download the
+spreadsheet, clean it, work out the figures, draw both charts and run the checks.
 
 ```
-python3 -m venv .venv
-./.venv/bin/pip install pandas matplotlib requests openpyxl pytest
+make setup
+make
+```
 
+The spreadsheet is downloaded once and reused, and the exact versions of every tool are pinned in
+`requirements.txt`, so running this next year gives the same answer rather than whatever the
+newest version happens to produce.
+
+To run a single step on its own:
+
+```
 ./.venv/bin/python src/fetch_data.py    # download the published spreadsheet
 ./.venv/bin/python src/clean_data.py    # turn it into clean tables
-./.venv/bin/python src/analyse.py       # work out the shares
-./.venv/bin/python src/chart.py         # draw the chart
-
-./.venv/bin/python -m pytest tests/     # check the cleaning rules still hold
+./.venv/bin/python src/analyse.py       # work out the shares and check they add up
+./.venv/bin/python src/chart.py         # draw both charts
+make test                               # run the checks on their own
 ```
 
 ## How it is put together
@@ -87,11 +96,17 @@ python3 -m venv .venv
 | Folder | What is in it |
 |---|---|
 | `src/` | The four steps: fetch, clean, analyse, chart |
+| `Makefile` | Runs all four in order with one command |
+| `requirements.txt` | Exact tool versions used to produce the published result |
 | `data/raw/` | The spreadsheet exactly as published, never edited |
 | `data/processed/` | Clean tables written by the cleaning step |
 | `outputs/` | The chart and the summary table |
-| `tests/` | Checks on the two cleaning rules that matter most |
+| `tests/` | Checks on the cleaning rules, and that our figures match the published totals |
 | `NOTES.md` | Every judgement call made along the way, and why |
+
+Every time the analysis runs, it checks that the specialty figures add up to the totals NHS
+Resolution publishes. If they ever stop matching, the run stops with an error rather than quietly
+publishing a wrong number. Both currently reconcile exactly.
 
 Raw data is never edited by hand. Every change happens in a script, so anyone can see what was done
 and get the same answer. `NOTES.md` is the honest record of the decisions, including the ones that

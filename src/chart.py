@@ -57,5 +57,61 @@ def draw() -> Path:
     return target
 
 
+
+def draw_trend() -> Path:
+    """
+    Money owed on known claims, year by year.
+
+    The important feature is the break. From 2022/23 NHS Resolution changed how
+    this sum is worked out, so the figures before and after are not measuring
+    the same thing. The chart marks that rather than drawing one smooth line
+    through it, because a reader who joined the two halves would conclude that
+    costs spiked and then collapsed, which is not what happened.
+    """
+    money = pd.read_csv(ROOT / "data" / "processed" / "liabilities_by_specialty.csv")
+    totals = money[money["specialty"] == "Total - Known claims"].copy()
+    totals = totals.sort_values("year")
+    totals["billions"] = totals["liability_gbp"] / 1e9
+
+    old_method = totals[totals["year"] <= "2021/22"]
+    new_method = totals[totals["year"] >= "2022/23"]
+
+    figure, axes = plt.subplots(figsize=(10, 5.5))
+    axes.plot(old_method["year"], old_method["billions"], marker="o",
+              color="#4878A8", label="Worked out the old way")
+    axes.plot(new_method["year"], new_method["billions"], marker="o",
+              color="#B5451C", label="Worked out the new way, from 2022/23")
+
+    boundary = list(totals["year"]).index("2022/23") - 0.5
+    axes.axvline(boundary, color="#888", linestyle="--", linewidth=1)
+    axes.annotate("method changed here",
+                  xy=(boundary, axes.get_ylim()[1] * 0.97),
+                  xytext=(boundary + 0.15, axes.get_ylim()[1] * 0.97),
+                  fontsize=9, color="#444", va="top")
+
+    axes.set_ylabel("GBP billions owed on known claims")
+    axes.set_title("The 2021/22 peak is a change of method, not a change in costs\n"
+                   "NHS clinical negligence, England",
+                   loc="left", fontsize=13, fontweight="bold")
+    axes.legend(loc="lower right", frameon=False)
+    axes.spines[["top", "right"]].set_visible(False)
+    axes.tick_params(axis="x", rotation=45)
+
+    figure.text(0.01, -0.06,
+                "Before 2022/23 the sum used an estimated settlement date for each claim. From "
+                "2022/23 it uses an actuarial view of when claims\nwill actually be paid. The two "
+                "halves are therefore not comparable, and the apparent peak and fall should not be "
+                "read as costs\nrising and then dropping. Figures before 2015/16 are not published "
+                "at this level of detail.\nSource: NHS Resolution, Annual Report Statistics 2025/26.",
+                fontsize=7.5, color="#444", va="top")
+
+    figure.tight_layout()
+    target = OUTPUTS / "money_owed_over_time.png"
+    figure.savefig(target, dpi=160, bbox_inches="tight")
+    print(f"chart written to {target}")
+    return target
+
+
 if __name__ == "__main__":
     draw()
+    draw_trend()
