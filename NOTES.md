@@ -78,3 +78,40 @@ is why an average claim cost tells you very little on its own.
 **What this does not show.** Nothing about whether care is getting better or worse, nothing about
 fault, and nothing about claims in Scotland, Wales or Northern Ireland, since NHS Resolution covers
 England only.
+
+### 26 October 2026 — checking the finding a second way, and the inflation question
+
+**Second route: by size of payout.** The specialty finding could be an artefact of how claims are
+grouped into specialties, so I asked the same question using the other split the spreadsheet
+offers, the size the claim is valued at. It agrees, and more sharply:
+
+> Claims valued at **£4.5m and over are 2.6%** of the claims reported in 2025/26 and account for
+> **80.3% of the money owed**, £30.2bn of £37.6bn.
+
+Meanwhile 72% of claims are valued under £100,000 and account for under 3% of the money. Two
+independent routes through the same data reaching the same conclusion is worth much more than one.
+
+The two routes are not really independent in a deep sense, since obstetric brain injury claims are
+expensive precisely because they are large. But they are different cuts of the data, and if the
+specialty result had been an artefact of grouping, the band result would not have lined up.
+
+**Why I have not adjusted for inflation, and what I did instead.**
+
+The figures run across eleven years in cash terms, so an obvious question is how much of the rise
+is just prices. I decided not to deflate, for a reason worth stating:
+
+- These are not past spending. They are estimates, made at each year end, of money expected to be
+  paid in the future. They already contain assumptions about future inflation and are discounted
+  back to a present value.
+- Deflating them by past consumer or GDP inflation would therefore be mixing two different things
+  and would produce a number that is harder to interpret, not easier.
+- The honest statement is that the figures are **in cash terms at each valuation date**, and that
+  changes between years reflect price inflation, changes in the number and size of claims, and
+  changes in the discount rate used, with no way to separate those three from this published table
+  alone.
+
+That is now stated on the trend chart and in the README.
+
+**It does not touch the main finding.** Every concentration figure in this project is a share
+within a single year, so inflation cannot affect it. 80.3% of the money sitting in claims of £4.5m
+and over is true whatever the price level.

@@ -28,6 +28,18 @@ In 2025/26:
 - At the opposite end, the "Other" grouping produced **39% of claims** and about **8%** of the
   money.
 
+## The same answer, reached a second way
+
+A finding from one angle can be an accident of how the data happens to be grouped. So the same
+question was asked again using the other split the spreadsheet offers: the size each claim is
+valued at, rather than which part of the NHS it came from.
+
+![Share of claims against share of money owed, by size of claim](outputs/money_vs_claims_by_band.png)
+
+It agrees, and more sharply. **Claims valued at £4.5 million and over are 2.6% of the claims
+reported and account for 80.3% of the money owed**, £30.2bn of the £37.6bn. At the other end,
+about 72% of claims are valued under £100,000 and together account for under 3% of the money.
+
 Once you think about what a birth injury means, the result makes sense. A child who needs care for
 the whole of a normal lifespan is enormously expensive to compensate, while most claims are far
 smaller. This is the usual shape of insurance costs, and it is why an average claim cost on its own
@@ -55,6 +67,15 @@ arrived during the year. Money owed covers every claim still open at the year en
 reported long before. Brain injury claims take years to resolve, so they build up in the open pile.
 It would be wrong to say "1.7% of claims cause 55% of costs". What is right, and is still the
 point, is that this category is a small share of new claims and a very large share of money owed.
+
+**The money figures are in cash terms and are not adjusted for inflation.** They are deliberately
+left that way. These are not records of past spending but estimates, made at each year end, of
+money expected to be paid in future, and they already contain assumptions about future inflation
+and are discounted to a present value. Deflating them by past inflation would mix two different
+things and make the result harder to read, not easier. So the honest statement is that a change
+between years reflects some combination of price inflation, the number and size of claims, and the
+discount rate used, and this published table cannot separate those three. None of this touches the
+main finding, because every share quoted here sits inside a single year.
 
 The figures also say nothing about whether care is getting better or worse, nothing about fault,
 and nothing about Scotland, Wales or Northern Ireland. NHS Resolution covers England only.
@@ -87,7 +108,7 @@ To run a single step on its own:
 ./.venv/bin/python src/fetch_data.py    # download the published spreadsheet
 ./.venv/bin/python src/clean_data.py    # turn it into clean tables
 ./.venv/bin/python src/analyse.py       # work out the shares and check they add up
-./.venv/bin/python src/chart.py         # draw both charts
+./.venv/bin/python src/chart.py         # draw all three charts
 make test                               # run the checks on their own
 ```
 

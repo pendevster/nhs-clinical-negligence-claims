@@ -89,7 +89,7 @@ def draw_trend() -> Path:
                   xytext=(boundary + 0.15, axes.get_ylim()[1] * 0.97),
                   fontsize=9, color="#444", va="top")
 
-    axes.set_ylabel("GBP billions owed on known claims")
+    axes.set_ylabel("GBP billions owed on known claims\n(cash terms, not adjusted for inflation)")
     axes.set_title("The 2021/22 peak is a change of method, not a change in costs\n"
                    "NHS clinical negligence, England",
                    loc="left", fontsize=13, fontweight="bold")
@@ -102,7 +102,7 @@ def draw_trend() -> Path:
                 "2022/23 it uses an actuarial view of when claims\nwill actually be paid. The two "
                 "halves are therefore not comparable, and the apparent peak and fall should not be "
                 "read as costs\nrising and then dropping. Figures before 2015/16 are not published "
-                "at this level of detail.\nSource: NHS Resolution, Annual Report Statistics 2025/26.",
+                "at this level of detail.\nFigures are in cash terms at each year end, so part of the rise is general price inflation rather than more or costlier claims.\nSource: NHS Resolution, Annual Report Statistics 2025/26.",
                 fontsize=7.5, color="#444", va="top")
 
     figure.tight_layout()
@@ -112,6 +112,53 @@ def draw_trend() -> Path:
     return target
 
 
+
+def draw_bands() -> Path:
+    """
+    The same finding reached a second way: by size of payout.
+
+    This is the clearer picture of the two, because it compares like with like.
+    Most claims are small and account for almost none of the money. A small
+    number of very large claims account for most of it.
+    """
+    table = pd.read_csv(OUTPUTS / "money_vs_claims_by_band.csv")
+    table = table.iloc[::-1]
+
+    positions = range(len(table))
+    height = 0.4
+
+    figure, axes = plt.subplots(figsize=(10, 6))
+    axes.barh([p + height / 2 for p in positions], table["money_share"],
+              height=height, label="Share of money owed", color="#B5451C")
+    axes.barh([p - height / 2 for p in positions], table["claims_share"],
+              height=height, label="Share of claims reported", color="#4878A8")
+
+    axes.set_yticks(list(positions))
+    axes.set_yticklabels(table["band"])
+    axes.set_xlabel("Percent")
+    axes.set_ylabel("Size the claim is valued at")
+    axes.set_title("Most claims are small. Most of the money is in a few very large ones.\n"
+                   "NHS clinical negligence, England, 2025/26",
+                   loc="left", fontsize=13, fontweight="bold")
+    axes.legend(loc="upper right", frameon=False)
+    axes.spines[["top", "right"]].set_visible(False)
+
+    figure.text(0.01, -0.02,
+                "Claims valued at GBP 4.5m and over are 2.6% of the claims reported in 2025/26 and "
+                "80.3% of the money owed.\nClaims reported during the year (15,236). Money owed on "
+                "all open known claims at 31 March 2026 (GBP 37.6bn). The two measures\ncover "
+                "different groups of claims. Source: NHS Resolution, Annual Report Statistics "
+                "2025/26.",
+                fontsize=7.5, color="#444", va="top")
+
+    figure.tight_layout()
+    target = OUTPUTS / "money_vs_claims_by_band.png"
+    figure.savefig(target, dpi=160, bbox_inches="tight")
+    print(f"chart written to {target}")
+    return target
+
+
 if __name__ == "__main__":
     draw()
+    draw_bands()
     draw_trend()
